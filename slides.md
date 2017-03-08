@@ -413,30 +413,6 @@ find_package(<package> [version] [EXACT] [QUIET] [MODULE] [CONFIG|NO_MODULE]
 
 ---
 
-# CMake - Konfigurační balíčky
-
-
-```CMake
-get_filename_component(json11_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set(json11_INCLUDE_DIRS ${json11_CMAKE_DIR}/include)
-set(json11_LIBRARIES json11)
-
-### Nová varianta
-
-add_library(json11::json11 STATIC IMPORTED)
-
-set_target_properties(json11::json11 PROPERTIES
-    IMPORTED_LOCATION ${json11_CMAKE_DIR}/lib)
-    
-set_target_properties(json11::json11 PROPERTIES
-    INTERFACE_LINK_LIBRARIES ${json11_LIBRARIES})
-
-set_target_properties(json11::json11 PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${json11_INCLUDE_DIRS})
-```
-
----
-
 # CMake - Balíčky - použití
 
 - Načtení balíčků
@@ -464,6 +440,37 @@ set_target_properties(json11::json11 PROPERTIES
 - Nová varianta použití
     ```CMake
     target_link_libraries(process json11::json11 ...)
+    ```
+
+---
+
+# CMake - Konfigurační balíčky
+
+- `json11-config.cmake`
+    ```CMake
+    get_filename_component(json11_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+    set(json11_INCLUDE_DIRS ${json11_CMAKE_DIR}/include)
+    set(json11_LIBRARIES json11)
+    
+    ### Nová varianta
+    
+    add_library(json11::json11 STATIC IMPORTED)
+    
+    set_target_properties(json11::json11 PROPERTIES
+        IMPORTED_LOCATION ${json11_CMAKE_DIR}/lib/libjson11.a)
+    
+    set_target_properties(json11::json11 PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${json11_INCLUDE_DIRS})
+    ```
+
+- `json11-config-version.cmake`
+    ```CMake
+    set(PACKAGE_VERSION 1.0)
+    
+    if("${PACKAGE_VERSION}" VERSION_EQUAL "${PACKAGE_FIND_VERSION}")
+        set(PACKAGE_VERSION_COMPATIBLE TRUE)
+        set(PACKAGE_VERSION_EXACT TRUE)
+    endif()
     ```
 
 ---
