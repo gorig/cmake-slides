@@ -8,6 +8,13 @@ class: center, middle
 
 # Obsah přednášky
 
+1. Sestavení programu v C++
+2. Použití CMake pomocí GUI a příkazové řádky
+3. Cmake - Definice cílů kompilace
+4. Cmake - Parametrizace sestavení
+5. Cmake - Kompozice projektu
+6. Cmake - Toolchain
+7. Cmake - Balíčky
 
 ---
 
@@ -101,28 +108,28 @@ class: center, middle
 - Sestavení spustitelného souboru
     ```CMake
     add_executable(<name> [WIN32] [MACOSX_BUNDLE]
-               [EXCLUDE_FROM_ALL]
-               source1 [source2 ...])
+        [EXCLUDE_FROM_ALL]
+        source1 [source2 ...])
     ```
 
 - Sestavení knihovny
     ```CMake
     add_library(<name> [STATIC | SHARED | MODULE]
-                [EXCLUDE_FROM_ALL]
-                source1 [source2 ...])
+        [EXCLUDE_FROM_ALL]
+        source1 [source2 ...])
     ```
 
 - Vlastní příkaz
     ```CMake
     add_custom_target(<name> [ALL] [command1 [args1...]]
-                      [COMMAND command2 [args2...] ...]
-                      [DEPENDS depend depend depend ... ]
-                      [BYPRODUCTS [files...]]
-                      [WORKING_DIRECTORY dir]
-                      [COMMENT comment]
-                      [VERBATIM] [USES_TERMINAL]
-                      [COMMAND_EXPAND_LISTS]
-                      [SOURCES src1 [src2...]])
+        [COMMAND command2 [args2...] ...]
+        [DEPENDS depend depend depend ... ]
+        [BYPRODUCTS [files...]]
+        [WORKING_DIRECTORY dir]
+        [COMMENT comment]
+        [VERBATIM] [USES_TERMINAL]
+        [COMMAND_EXPAND_LISTS]
+        [SOURCES src1 [src2...]])
     ```
 
 ---
@@ -244,8 +251,8 @@ set(INCLUDE_FILES v3.h particle.h)
 
 add_executable(output ${SOURCE_FILES} ${INCLUDE_FILES})
 target_link_libraries(output /usr/lib/framework/framework/libframework.a)
-target_include_directories(output /usr/include/framework)
-target_compile_definitions(output -DFRAMEWORK_USE_GPU)
+target_include_directories(output PRIVATE /usr/include/framework)
+target_compile_definitions(output PRIVATE -DFRAMEWORK_USE_GPU)
 ```
 
 ---
@@ -385,10 +392,89 @@ make
 
 ---
 
+# CMake - Balíčky
+
+- Umožňuje použití externích knihoven
+- Existují dva druhy:
+  - **moduly** - definované v CMake
+        - `Find<package>.cmake`
+  - **konfigurační** - obvykle definované knihovnou
+        - `<name>Config.cmake`
+        - `<lower-case-name>-config.cmake`
+
+
+```CMake
+find_package(<package> [version] [EXACT] [QUIET] [MODULE] [CONFIG|NO_MODULE]
+     [REQUIRED] [[COMPONENTS] [components...]]
+     [OPTIONAL_COMPONENTS components...]
+     [PATHS path1 [path2 ... ]]
+     ...)
+```
+
+---
+
+# CMake - Konfigurační balíčky
+
+
+```CMake
+get_filename_component(json11_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(json11_INCLUDE_DIRS ${json11_CMAKE_DIR}/include)
+set(json11_LIBRARIES json11)
+
+### Nová varianta
+
+add_library(json11::json11 STATIC IMPORTED)
+
+set_target_properties(json11::json11 PROPERTIES
+    IMPORTED_LOCATION ${json11_CMAKE_DIR}/lib)
+    
+set_target_properties(json11::json11 PROPERTIES
+    INTERFACE_LINK_LIBRARIES ${json11_LIBRARIES})
+
+set_target_properties(json11::json11 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${json11_INCLUDE_DIRS})
+```
+
+---
+
+# CMake - Balíčky - použití
+
+- Načtení balíčků
+    ```CMake
+    ...
+    find_package(cross-build 1.0 PATHS ${CROSSLIB_SOURCE_DIR} REQUIRED)
+    find_package(cross-common 1.0)
+    find_package(cross-config 1.0)
+    find_package(cross-curl 1.0)
+    find_package(cross-db 1.0)
+    find_package(cajun 2.0.2)
+    find_package(cairo 1.10.2)
+    find_package(json11 1.0)
+    find_package(png 1.6 NO_MODULE)
+    find_package(curl 7 NO_MODULE)
+    ...
+    ```
+
+- Starší varianta použití
+    ```CMake
+    include_directories(${json11_INCLUDE_DIRS})
+    target_link_libraries(process ${json11_LIBRARIES} ...)
+    ```
+
+- Nová varianta použití
+    ```CMake
+    target_link_libraries(process json11::json11 ...)
+    ```
+
+---
+
 # Nepokrytá témata
 
+- Systémové proměnné
 - Generování konfiguračních hlavičkových souborů
-- Instalace souborů
+- Příkaz *install*
+    - Instalace výsledných souborů do cílového umístění
+    - Generování cmake souboru pro import knihovny
 - Introspekce systému
 - CPack
 - CTest
